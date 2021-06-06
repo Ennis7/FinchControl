@@ -235,7 +235,6 @@ namespace FinchControl
             for(int i = 1; i < 4; i++)
             {
                 Console.WriteLine($"Attempt {i}...");
-                Thread.Sleep(1000);
                 if(finch.connect())
                 {
                     connected = true;
@@ -243,6 +242,7 @@ namespace FinchControl
                     DisplayContinuePrompt();
                     break;
                 }
+                Thread.Sleep(1000);
             }
 
             return connected;
