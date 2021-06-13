@@ -17,8 +17,10 @@ namespace FinchControl
         //Description:
         //Author: Sarah Ennis
         //Date Created: 06/03/2021
-        //Last Motified: 06/04/2021
+        //Last Motified: 06/13/2021
         //.................................
+
+        static bool Lights { get; set; }
 
         static void Main(string[] args)
         {
@@ -185,12 +187,155 @@ namespace FinchControl
 
         static void DataRecorderDisplayMenuScreen(Finch finch)
         {
+            string menuChoice;
+            bool exiting = false;
+            int numberOfDataPoints = 0;
+            double dataPointFrequency = 0;
+            double[] data = new double[numberOfDataPoints];
+
             DisplayHeader("Data Recorder");
-            Console.WriteLine("This module is under development.");
-            Console.WriteLine();
-            DisplayContinuePrompt();
+            while (!exiting)
+            {
+                DisplayHeader("Data Recorder Menu");
+                Console.WriteLine("1. Number of Data Points");
+                Console.WriteLine("2. Frequency of Data Points");
+                Console.WriteLine("3. Get Data");
+                Console.WriteLine("4. Show Data");
+                Console.WriteLine("5. Return to Main Menu");
+                Console.WriteLine("Enter Choice:");
+                menuChoice = Console.ReadLine();
+
+                switch (menuChoice)
+                {
+                    case "1":
+                        numberOfDataPoints = DataRecorderDisplayGetNumberOfDataPoints();
+                        break;
+                    case "2":
+                        dataPointFrequency = DataRecorderDisplayGetDataPointFrequency(); 
+                        break;
+                    case "3":
+                        data = DataRecorderDisplayGetData(numberOfDataPoints, dataPointFrequency, finch);
+                        break;
+                    case "4":
+                        DataRecorderDisplayData(data);
+                        break;
+                    case "5":
+                        exiting = true;
+                        break;
+                    default:
+                        Console.WriteLine("Please make a valid choice.");
+                        DisplayContinuePrompt();
+                        break;
+                }
+            }
         }
 
+        static double DataRecorderDisplayGetDataPointFrequency()
+        {
+            double seconds;
+
+            DisplayHeader("Data Point Frequency");
+            Console.WriteLine("Please enter the frequency of readings in seconds");
+            while (!double.TryParse(Console.ReadLine(), out seconds) || seconds < 1)
+            {
+                Console.WriteLine();
+                Console.WriteLine("Invalid. Must be a number, and must be 1 or greater. Please try again:");
+            }
+            Console.WriteLine();
+            Console.WriteLine($"You chose {seconds} seconds.");
+            DisplayContinuePrompt();
+
+            return  seconds * 1000;
+        }
+
+        static int DataRecorderDisplayGetNumberOfDataPoints()
+        {
+            int number;
+
+            DisplayHeader("Number of Data Points");
+            Console.WriteLine("Please enter the number of readings");
+            while (!int.TryParse(Console.ReadLine(), out number) || number < 1)
+            {
+                Console.WriteLine();
+                Console.WriteLine("Invalid. Must be a number, and must be 1 or greater. Please try again:");
+            }
+            Console.WriteLine();
+            Console.WriteLine($"You chose {number} times.");
+            DisplayContinuePrompt();
+
+            return number;
+        }
+
+        static double[] DataRecorderDisplayGetData(int numberOfDataPoints, double dataPointFrequency, Finch finch)
+        {
+            double[] data = new double[numberOfDataPoints];
+            int seconds = Convert.ToInt32(Math.Floor(dataPointFrequency));
+            double readingData;
+            bool exiting = false;
+            string menuChoice, readingType = "";
+
+            DisplayHeader("Get Data");
+
+            while (!exiting)
+            {
+                DisplayHeader("Data Recorder Menu");
+                Console.WriteLine("1. Temperature");
+                Console.WriteLine("2. Lights");
+                Console.WriteLine("Enter Choice:");
+                menuChoice = Console.ReadLine();
+
+                switch (menuChoice)
+                {
+                    case "1":
+                        readingType = "temperature";
+                        exiting = true;
+                        Lights = false;
+                        break;
+                    case "2":
+                        readingType = "light";
+                        Lights = true;
+                        exiting = true;
+                        break;
+                    default:
+                        Console.WriteLine("Please make a valid choice.");
+                        DisplayContinuePrompt();
+                        break;
+                }
+            }
+
+            Console.WriteLine($"The program will now take a {readingType} reading every {dataPointFrequency / 1000} seconds, {numberOfDataPoints} times.");
+            DisplayContinuePrompt();
+
+            for (int i = 0; i < numberOfDataPoints; i++)
+            {
+                readingData = Lights ? finch.getLightSensors().Average() : finch.getTemperature();
+                data[i] = readingData;
+                Console.WriteLine($"{readingData}");
+                finch.wait(seconds);
+            }
+            Console.WriteLine();
+            Console.WriteLine("Data recording is complete");
+            DisplayContinuePrompt();
+
+            return data;
+        }
+
+        static void DataRecorderDisplayDataTable(double[] data)
+        {
+            Console.WriteLine(Lights ? "Reading | Light Value" : "Reading | Celcius | Fahrenheit");
+            Console.WriteLine();
+            for (int i = 0; i < data.Length; i++)
+            {
+                Console.WriteLine(Lights ? $"reading {i + 1} | {data[i]}" : $"reading {i + 1} | {data[i]} | {CelciusToFahrenheit(data[i])}");
+            }
+        }
+
+        static void DataRecorderDisplayData(double[] data)
+        {
+            DisplayHeader("Data Display");
+            DataRecorderDisplayDataTable(data);
+            DisplayContinuePrompt();
+        }
         static void AlarmSystemDisplayMenuScreen(Finch finch)
         {
             DisplayHeader("Alarm System");
@@ -298,6 +443,11 @@ namespace FinchControl
             finch.noteOn(note);
             finch.wait(500);
             finch.noteOff();
+        }
+
+        static double CelciusToFahrenheit(double celcius)
+        {
+            return celcius * 1.8 + 32;
         }
     }
 }
