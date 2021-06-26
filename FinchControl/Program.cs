@@ -105,6 +105,7 @@ namespace FinchControl
                         break;
                     case "E":
                     case "e":
+                        birdie.disConnect();
                         exiting = true;
                         break;
                     default:
@@ -923,12 +924,14 @@ namespace FinchControl
             Console.WriteLine("Click any key when ready to execute commands.");
             DisplayContinuePrompt();
 
-            for (int i = 0; i < commands.Count; i++)
+            foreach (var command in commands)
             {
-                Console.WriteLine($"Running command: {commands[i] + 1}");
+                Console.WriteLine($"Running command: {command}");
 
-                switch (commands[i])
+                switch (command)
                 {
+                    case FinchCommand.NONE:
+                        break;
                     case FinchCommand.DONE:
                         break;
                     case FinchCommand.MOVEFORWARD:
