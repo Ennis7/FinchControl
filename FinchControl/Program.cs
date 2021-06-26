@@ -1,13 +1,26 @@
-﻿using System;
+﻿using FinchAPI;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
-using FinchAPI;
 
 namespace FinchControl
 {
+    public enum FinchCommand
+    {
+        NONE,
+        DONE,
+        MOVEFORWARD,
+        MOVEBACKWARD,
+        STOPMOTORS,
+        DELAY,
+        TURNRIGHT,
+        TURNLEFT,
+        LEDON,
+        LEDOFF,
+        GETTEMPERATURE
+    }
+
     class Program
     {
 
@@ -19,20 +32,6 @@ namespace FinchControl
         // Date Created: 06/03/2021
         // Last Motified: 06/13/2021
         //.................................
-
-        public enum FinchCommand
-        {
-            DONE,
-            MOVEFORWARD,
-            MOVEBACKWARD,
-            STOPMOTORS,
-            DELAY,
-            TURNRIGHT,
-            TURNLEFT,
-            LEDON,
-            LEDOFF,
-            GETTEMPERATURE
-        }
 
         static bool Lights { get; set; }
 
@@ -70,7 +69,7 @@ namespace FinchControl
                         while (!connected)
                         {
                             connected = DisplayConnectFinchRobot(birdie);
-                            if(!connected)
+                            if (!connected)
                             {
                                 Console.WriteLine();
                                 Console.WriteLine("There seems to be an issue connecting to the finch...");
@@ -113,7 +112,7 @@ namespace FinchControl
                         DisplayContinuePrompt();
                         break;
                 }
-            }   
+            }
         }
 
         static void TalentShowDisplayMenuScreen(Finch finch)
@@ -152,7 +151,7 @@ namespace FinchControl
                 }
             }
         }
-        
+
         static void TalentShowDisplayLightAndSound(Finch finch)
         {
             DisplayHeader("Light and Sound");
@@ -171,7 +170,7 @@ namespace FinchControl
 
             BetterMotors(finch, -255, 255, 250);
             BetterMotors(finch, 255, -255, 250);
-            BetterMotors(finch,-255, 255, 1200);
+            BetterMotors(finch, -255, 255, 1200);
             BetterMotors(finch, 255, -255, 250);
             BetterMotors(finch, -255, 255, 250);
             BetterMotors(finch, 255, -255, 1200);
@@ -183,7 +182,7 @@ namespace FinchControl
         {
             DisplayHeader("Mixing it Up!");
             Console.WriteLine("Enjoy this little song and dance from the finch!");
-            
+
             BetterMotors(finch, -255, 255, 250);
             RandomColorAndNote(finch);
             BetterMotors(finch, 255, -255, 250);
@@ -225,7 +224,7 @@ namespace FinchControl
                         numberOfDataPoints = DataRecorderDisplayGetNumberOfDataPoints();
                         break;
                     case "2":
-                        dataPointFrequency = DataRecorderDisplayGetDataPointFrequency(); 
+                        dataPointFrequency = DataRecorderDisplayGetDataPointFrequency();
                         break;
                     case "3":
                         data = DataRecorderDisplayGetData(numberOfDataPoints, dataPointFrequency, finch);
@@ -259,7 +258,7 @@ namespace FinchControl
             Console.WriteLine($"You chose {seconds} seconds.");
             DisplayContinuePrompt();
 
-            return  seconds * 1000;
+            return seconds * 1000;
         }
 
         static int DataRecorderDisplayGetNumberOfDataPoints()
@@ -449,14 +448,14 @@ namespace FinchControl
             return answer;
         }
 
-        static string[] AlarmDisplaySetRangeType (string sensorType)
+        static string[] AlarmDisplaySetRangeType(string sensorType)
         {
-            string[] answer = new string[] {"", ""};
+            string[] answer = new string[] { "", "" };
             bool exitingLights = false, exitingTemp = false;
 
             DisplayHeader("Alarm Range Type");
 
-            switch(sensorType)
+            switch (sensorType)
             {
                 case "lights":
                     Console.WriteLine("Would you like to use a minimum or maximum light threshold?");
@@ -544,17 +543,17 @@ namespace FinchControl
                     DisplayContinuePrompt();
                     break;
             }
-            
+
 
             return answer;
         }
-        
-        static int[] AlarmDisplaySetMinMaxThresholdValue (Finch finch, string lightThresholdType, string tempThresholdType, string sensorType)
+
+        static int[] AlarmDisplaySetMinMaxThresholdValue(Finch finch, string lightThresholdType, string tempThresholdType, string sensorType)
         {
-            int[] answer = new int[] { 0,0 };
+            int[] answer = new int[] { 0, 0 };
 
             DisplayHeader($"Set Threshold Values");
-            switch(sensorType)
+            switch (sensorType)
             {
                 case "lights":
                     Console.WriteLine($"Set value for {lightThresholdType} light threshold");
@@ -654,7 +653,7 @@ namespace FinchControl
             return answer;
         }
 
-        static void AlarmDisplaySetAlarm (Finch finch, string sensorsToMonitor, string sensorType, string lightThresholdType, string tempThresholdType, int lightThresholdValue, int tempThresholdValue, int timeToMonitor)
+        static void AlarmDisplaySetAlarm(Finch finch, string sensorsToMonitor, string sensorType, string lightThresholdType, string tempThresholdType, int lightThresholdValue, int tempThresholdValue, int timeToMonitor)
         {
             double startingLightLevel = GetLightLevel(finch, sensorsToMonitor), lightThreshold, tempThreshold;
             double startingTempLevel = finch.getTemperature();
@@ -671,7 +670,7 @@ namespace FinchControl
             Console.ReadKey();
             Console.Clear();
 
-            switch(sensorType)
+            switch (sensorType)
             {
                 case "lights":
                     switch (lightThresholdType.ToLower())
@@ -764,7 +763,7 @@ namespace FinchControl
                     }
                     break;
                 default:
-                    if(tempThresholdType == "maximum" && lightThresholdType == "maximum")
+                    if (tempThresholdType == "maximum" && lightThresholdType == "maximum")
                     {
                         tempThreshold = startingTempLevel + tempThresholdValue;
                         lightThreshold = startingLightLevel + lightThresholdValue;
@@ -786,8 +785,8 @@ namespace FinchControl
                             }
                             finch.wait(1000);
                         }
-                    } 
-                    else if(tempThresholdType == "minimum" && lightThresholdType == "maximum")
+                    }
+                    else if (tempThresholdType == "minimum" && lightThresholdType == "maximum")
                     {
                         tempThreshold = startingTempLevel - tempThresholdValue;
                         lightThreshold = startingLightLevel + lightThresholdValue;
@@ -809,8 +808,8 @@ namespace FinchControl
                             }
                             finch.wait(1000);
                         }
-                    } 
-                    else if(tempThresholdType == "maximum" && lightThresholdType == "minimum")
+                    }
+                    else if (tempThresholdType == "maximum" && lightThresholdType == "minimum")
                     {
                         tempThreshold = startingTempLevel + tempThresholdValue;
                         lightThreshold = startingLightLevel - lightThresholdValue;
@@ -832,7 +831,8 @@ namespace FinchControl
                             }
                             finch.wait(1000);
                         }
-                    } else
+                    }
+                    else
                     {
                         tempThreshold = startingTempLevel - tempThresholdValue;
                         lightThreshold = startingLightLevel - lightThresholdValue;
@@ -892,9 +892,7 @@ namespace FinchControl
                 switch (menuChoice)
                 {
                     case "1":
-                        commandParameters.wait = DisplayGetDelayDuration();
-                        commandParameters.motorSpeed = DisplayGetMotorSpeed();
-                        commandParameters.ledBrightness = DisplayGetLEDBrightness();
+                        commandParameters = DisplayGetCommandParameters();
                         break;
                     case "2":
                         DisplayGetFinchCommands(commands);
@@ -903,7 +901,7 @@ namespace FinchControl
                         DisplayFinchCommands(commands);
                         break;
                     case "4":
-                        DisplayExecuteFinchCommands(finch, commands, commandParameters.motorSpeed, commandParameters.ledBrightness, commandParameters.wait);
+                        DisplayExecuteFinchCommands(finch, commands, commandParameters);
                         break;
                     case "e":
                     case "E":
@@ -915,8 +913,12 @@ namespace FinchControl
             }
         }
 
-        static void DisplayExecuteFinchCommands(Finch finch, List<FinchCommand> commands, int motorSpeed, int ledBrightness, double wait)
+        static void DisplayExecuteFinchCommands(Finch finch, List<FinchCommand> commands, (int motorSpeed, int ledBrightness, double wait) commandParameters)
         {
+            int motorSpeed = commandParameters.motorSpeed;
+            int ledBrightness = commandParameters.ledBrightness;
+            int wait = (int)(commandParameters.wait * 1000);
+
             DisplayHeader("Execute Finch Commands");
             Console.WriteLine("Click any key when ready to execute commands.");
             DisplayContinuePrompt();
@@ -939,7 +941,7 @@ namespace FinchControl
                         finch.setMotors(0, 0);
                         break;
                     case FinchCommand.DELAY:
-                        finch.wait(Convert.ToInt32(wait));
+                        finch.wait(wait);
                         break;
                     case FinchCommand.TURNRIGHT:
                         finch.setMotors(motorSpeed, -motorSpeed);
@@ -966,23 +968,27 @@ namespace FinchControl
 
         static void DisplayGetFinchCommands(List<FinchCommand> commands)
         {
-            FinchCommand command;
-            bool done = false;
+            FinchCommand command = FinchCommand.NONE;
 
             DisplayHeader("Get Finch Commands");
 
-            while (!done)
+            Console.WriteLine("Available commands: ");
+
+            foreach (var item in Enum.GetValues(typeof(FinchCommand)))
             {
-                Console.WriteLine("Enter a command, or type 'Done' to exit:");
-                if (Console.ReadLine().ToUpper() == "DONE")
+                Console.WriteLine(item);
+            }
+            Console.WriteLine();
+
+            Console.WriteLine("Enter a command, or type 'Done' to exit:");
+            while (command != FinchCommand.DONE)
+            {
+                while (!Enum.TryParse(Console.ReadLine().ToUpper(), out command))
                 {
-                    done = true;
+                    Console.WriteLine();
+                    Console.WriteLine("Invalid. Answer must be one of the commands (not case sensitive). Please try again:");
                 }
-                else
-                {
-                    Enum.TryParse(Console.ReadLine().ToUpper(), out command);
-                    commands.Add(command);
-                }
+                commands.Add(command);
             }
 
 
@@ -1009,16 +1015,29 @@ namespace FinchControl
             DisplayContinuePrompt();
         }
 
-        static double DisplayGetDelayDuration()
+        static (int motorSpeed, int ledBrightness, double wait) DisplayGetCommandParameters()
         {
-            double wait;
+            (int motorSpeed, int ledBrightness, double wait) commandParameters;
 
-            DisplayHeader("Length of Delay");
+            DisplayHeader("Get Command Parameters");
 
+            Console.Write("Enter the motor speed [1 - 255]:");
+            while (!int.TryParse(Console.ReadLine(), out commandParameters.motorSpeed))
+            {
+                Console.WriteLine();
+                Console.WriteLine("Invalid. Answer must be a number. Please try again:");
+            }
 
-            Console.Write("Enter Length of Delay (milliseconds):");
+            Console.Write("Enter the LED brightness [1 - 255]:");
+            while (!int.TryParse(Console.ReadLine(), out commandParameters.ledBrightness))
+            {
+                Console.WriteLine();
+                Console.WriteLine("Invalid. Answer must be a number. Please try again:");
+            }
 
-            while(!double.TryParse(Console.ReadLine(), out wait))
+            Console.Write("Enter Length of Delay (seconds):");
+
+            while (!double.TryParse(Console.ReadLine(), out commandParameters.wait))
             {
                 Console.WriteLine();
                 Console.WriteLine("Invalid. Answer must be a number. Please try again:");
@@ -1026,41 +1045,7 @@ namespace FinchControl
 
             DisplayContinuePrompt();
 
-            return wait;
-        }
-
-        
-        static int DisplayGetMotorSpeed()
-        {
-            int motorSpeed;
-
-            DisplayHeader("Motor Speed");
-
-            Console.Write("Enter the motor speed [1 - 255]:");
-            while(int.TryParse(Console.ReadLine(), out motorSpeed))
-            {
-                Console.WriteLine();
-                Console.WriteLine("Invalid. Answer must be a number. Please try again:");
-            }
-
-            return motorSpeed;
-        }
-
-        
-        static int DisplayGetLEDBrightness()
-        {
-            int ledBrightness;
-
-            DisplayHeader("LED Brightness");
-
-            Console.Write("Enter the LED brightness [1 - 255]:");
-            while(!int.TryParse(Console.ReadLine(), out ledBrightness))
-            {
-                Console.WriteLine();
-                Console.WriteLine("Invalid. Answer must be a number. Please try again:");
-            }
-
-            return ledBrightness;
+            return commandParameters;
         }
 
         static void DisplayDisconnectFinchRobot(Finch finch)
@@ -1088,10 +1073,10 @@ namespace FinchControl
             DisplayContinuePrompt();
 
             Console.WriteLine("Attempting to connect to the Finch.");
-            for(int i = 1; i < 4; i++)
+            for (int i = 1; i < 4; i++)
             {
                 Console.WriteLine($"Attempt {i}...");
-                if(finch.connect())
+                if (finch.connect())
                 {
                     connected = true;
                     Console.WriteLine("Your Finch Robot is now connected");
@@ -1136,7 +1121,7 @@ namespace FinchControl
         static void BetterMotors(Finch finch, int left, int right, int wait)
         {
             finch.setMotors(left, right);
-            finch.wait(wait); 
+            finch.wait(wait);
             finch.setMotors(0, 0);
         }
 
