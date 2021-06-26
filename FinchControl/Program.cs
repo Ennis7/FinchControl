@@ -18,7 +18,9 @@ namespace FinchControl
         TURNLEFT,
         LEDON,
         LEDOFF,
-        GETTEMPERATURE
+        GETTEMPERATURE,
+        LIGHTLEVEL,
+        RANDOMCOLORANDNOTE
     }
 
     class Program
@@ -30,7 +32,7 @@ namespace FinchControl
         // Description: Application to control amd demonstrate the Finch robots various functions.
         // Author: Sarah Ennis
         // Date Created: 06/03/2021
-        // Last Motified: 06/13/2021
+        // Last Motified: 06/25/2021
         //.................................
 
         static bool Lights { get; set; }
@@ -960,6 +962,12 @@ namespace FinchControl
                         break;
                     case FinchCommand.GETTEMPERATURE:
                         Console.WriteLine($"Current temp: {finch.getTemperature()}");
+                        break;
+                    case FinchCommand.LIGHTLEVEL:
+                        Console.WriteLine($"Current light level: {finch.getLightSensors().Average()}");
+                        break;
+                    case FinchCommand.RANDOMCOLORANDNOTE:
+                        RandomColorAndNote(finch);
                         break;
                     default:
                         break;
