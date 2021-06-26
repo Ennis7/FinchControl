@@ -20,6 +20,20 @@ namespace FinchControl
         // Last Motified: 06/13/2021
         //.................................
 
+        public enum FinchCommand
+        {
+            DONE,
+            MOVEFORWARD,
+            MOVEBACKWARD,
+            STOPMOTORS,
+            DELAY,
+            TURNRIGHT,
+            TURNLEFT,
+            LEDON,
+            LEDOFF,
+            GETTEMPERATURE
+        }
+
         static bool Lights { get; set; }
 
         static void Main(string[] args)
@@ -849,10 +863,204 @@ namespace FinchControl
 
         static void UserProgrammingDisplayMenuScreen(Finch finch)
         {
+            (int motorSpeed, int ledBrightness, double wait) commandParameters;
+            commandParameters.motorSpeed = 0;
+            commandParameters.ledBrightness = 0;
+            commandParameters.wait = 0;
+            string menuChoice;
+            bool exiting = false;
+
+            List<FinchCommand> commands = new List<FinchCommand>();
+
             DisplayHeader("User Programming");
-            Console.WriteLine("This module is under development.");
-            Console.WriteLine();
+            while (!exiting)
+            {
+                Console.Clear();
+                Console.WriteLine();
+                Console.WriteLine("Main Menu");
+                Console.WriteLine();
+
+                Console.WriteLine("1. Get Command Parameters");
+                Console.WriteLine("2. Get Finch Robot Commands");
+                Console.WriteLine("3. Display Finch Robot Command");
+                Console.WriteLine("4. Display Execute");
+                Console.WriteLine("E. Exit");
+                Console.WriteLine();
+                Console.Write("Enter Choice:");
+                menuChoice = Console.ReadLine();
+
+                switch (menuChoice)
+                {
+                    case "1":
+                        commandParameters.wait = DisplayGetDelayDuration();
+                        commandParameters.motorSpeed = DisplayGetMotorSpeed();
+                        commandParameters.ledBrightness = DisplayGetLEDBrightness();
+                        break;
+                    case "2":
+                        DisplayGetFinchCommands(commands);
+                        break;
+                    case "3":
+                        DisplayFinchCommands(commands);
+                        break;
+                    case "4":
+                        DisplayExecuteFinchCommands(finch, commands, commandParameters.motorSpeed, commandParameters.ledBrightness, commandParameters.wait);
+                        break;
+                    case "e":
+                    case "E":
+                        exiting = true;
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+
+        static void DisplayExecuteFinchCommands(Finch finch, List<FinchCommand> commands, int motorSpeed, int ledBrightness, double wait)
+        {
+            DisplayHeader("Execute Finch Commands");
+            Console.WriteLine("Click any key when ready to execute commands.");
             DisplayContinuePrompt();
+
+            for (int i = 0; i < commands.Count; i++)
+            {
+                Console.WriteLine($"Running command: {commands[i] + 1}");
+
+                switch (commands[i])
+                {
+                    case FinchCommand.DONE:
+                        break;
+                    case FinchCommand.MOVEFORWARD:
+                        finch.setMotors(motorSpeed, motorSpeed);
+                        break;
+                    case FinchCommand.MOVEBACKWARD:
+                        finch.setMotors(-motorSpeed, -motorSpeed);
+                        break;
+                    case FinchCommand.STOPMOTORS:
+                        finch.setMotors(0, 0);
+                        break;
+                    case FinchCommand.DELAY:
+                        finch.wait(Convert.ToInt32(wait));
+                        break;
+                    case FinchCommand.TURNRIGHT:
+                        finch.setMotors(motorSpeed, -motorSpeed);
+                        break;
+                    case FinchCommand.TURNLEFT:
+                        finch.setMotors(-motorSpeed, motorSpeed);
+                        break;
+                    case FinchCommand.LEDON:
+                        finch.setLED(ledBrightness, ledBrightness, ledBrightness);
+                        break;
+                    case FinchCommand.LEDOFF:
+                        finch.setLED(0, 0, 0);
+                        break;
+                    case FinchCommand.GETTEMPERATURE:
+                        Console.WriteLine($"Current temp: {finch.getTemperature()}");
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            DisplayContinuePrompt();
+        }
+
+        static void DisplayGetFinchCommands(List<FinchCommand> commands)
+        {
+            FinchCommand command;
+            bool done = false;
+
+            DisplayHeader("Get Finch Commands");
+
+            while (!done)
+            {
+                Console.WriteLine("Enter a command, or type 'Done' to exit:");
+                if (Console.ReadLine().ToUpper() == "DONE")
+                {
+                    done = true;
+                }
+                else
+                {
+                    Enum.TryParse(Console.ReadLine().ToUpper(), out command);
+                    commands.Add(command);
+                }
+            }
+
+
+            Console.WriteLine();
+            Console.WriteLine("The commands:");
+            foreach (var com in commands)
+            {
+                Console.WriteLine(com);
+            }
+
+            DisplayContinuePrompt();
+        }
+
+        static void DisplayFinchCommands(List<FinchCommand> commands)
+        {
+            DisplayHeader("Finch Commands");
+
+            Console.WriteLine("The commands:");
+            foreach (var com in commands)
+            {
+                Console.WriteLine(com);
+            }
+
+            DisplayContinuePrompt();
+        }
+
+        static double DisplayGetDelayDuration()
+        {
+            double wait;
+
+            DisplayHeader("Length of Delay");
+
+
+            Console.Write("Enter Length of Delay (milliseconds):");
+
+            while(!double.TryParse(Console.ReadLine(), out wait))
+            {
+                Console.WriteLine();
+                Console.WriteLine("Invalid. Answer must be a number. Please try again:");
+            }
+
+            DisplayContinuePrompt();
+
+            return wait;
+        }
+
+        
+        static int DisplayGetMotorSpeed()
+        {
+            int motorSpeed;
+
+            DisplayHeader("Motor Speed");
+
+            Console.Write("Enter the motor speed [1 - 255]:");
+            while(int.TryParse(Console.ReadLine(), out motorSpeed))
+            {
+                Console.WriteLine();
+                Console.WriteLine("Invalid. Answer must be a number. Please try again:");
+            }
+
+            return motorSpeed;
+        }
+
+        
+        static int DisplayGetLEDBrightness()
+        {
+            int ledBrightness;
+
+            DisplayHeader("LED Brightness");
+
+            Console.Write("Enter the LED brightness [1 - 255]:");
+            while(!int.TryParse(Console.ReadLine(), out ledBrightness))
+            {
+                Console.WriteLine();
+                Console.WriteLine("Invalid. Answer must be a number. Please try again:");
+            }
+
+            return ledBrightness;
         }
 
         static void DisplayDisconnectFinchRobot(Finch finch)
