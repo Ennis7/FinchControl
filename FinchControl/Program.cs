@@ -1,6 +1,7 @@
 ﻿using FinchAPI;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 
@@ -59,6 +60,7 @@ namespace FinchControl
                 Console.WriteLine("4. Alarm System");
                 Console.WriteLine("5. User Programming");
                 Console.WriteLine("6. Disconnect Finch Robot");
+                Console.WriteLine("7. Console Theme Menu");
                 Console.WriteLine("E. Exit");
                 Console.WriteLine("Enter Choice:");
                 menuChoice = Console.ReadLine();
@@ -105,6 +107,9 @@ namespace FinchControl
                     case "6":
                         DisplayDisconnectFinchRobot(birdie);
                         break;
+                    case "7":
+                        SetConsoleTheme();
+                        break;
                     case "E":
                     case "e":
                         birdie.disConnect();
@@ -116,6 +121,87 @@ namespace FinchControl
                         break;
                 }
             }
+        }
+
+        static void SetConsoleTheme()
+        {
+            (ConsoleColor foregroundColor, ConsoleColor backgroundColor) themeColors;
+            bool themeChosen = false;
+
+            themeColors = ReadThemeData();
+
+            Console.ForegroundColor = themeColors.foregroundColor;
+            Console.BackgroundColor = themeColors.backgroundColor;
+            Console.Clear();
+
+            DisplayHeader("Set Application Theme");
+
+            Console.WriteLine($"Current foreground color: {Console.ForegroundColor}");
+            Console.WriteLine($"Current background color: {Console.BackgroundColor}");
+            Console.WriteLine();
+
+            Console.WriteLine("Would you like to change the current theme [ yes | no ]?");
+            if (Console.ReadLine().ToLower() == "yes")
+            {
+                while(!themeChosen)
+                {
+                    themeColors.foregroundColor = GetColorFromUser("foreground");
+                    themeColors.backgroundColor = GetColorFromUser("background");
+
+                    Console.ForegroundColor = themeColors.foregroundColor;
+                    Console.BackgroundColor = themeColors.backgroundColor;
+                    Console.Clear();
+                    DisplayHeader("Set Application Theme");
+                    Console.WriteLine($"New foreground color: {Console.ForegroundColor}");
+                    Console.WriteLine($"New background color: {Console.BackgroundColor}");
+
+                    Console.WriteLine();
+                    Console.WriteLine("Is this the theme you would like?");
+                    if (Console.ReadLine().ToLower() == "yes")
+                    {
+                        themeChosen = true;
+                        WriteThemeData(themeColors.foregroundColor, themeColors.backgroundColor);
+                    }
+                }
+            }
+            DisplayContinuePrompt();
+        }
+
+        private static void WriteThemeData(ConsoleColor foregroundColor, ConsoleColor backgroundColor)
+        {
+            string dataPath = @"Data/Theme.txt";
+
+            File.WriteAllText(dataPath, foregroundColor.ToString() + "\n");
+            File.AppendAllText(dataPath, backgroundColor.ToString());
+        }
+
+        static ConsoleColor GetColorFromUser(string property)
+        {
+            ConsoleColor consoleColor;
+
+            Console.WriteLine($"Enter a color for the {property}:");
+            while (!Enum.TryParse<ConsoleColor>(Console.ReadLine(), out consoleColor))
+            {
+                Console.WriteLine("That doesn't appear to be a valid color, please try again...");
+            }
+
+            return consoleColor;
+        }
+
+        static (ConsoleColor foregroundColor, ConsoleColor backgroundColor) ReadThemeData()
+        {
+            string dataPath = @"Data/Theme.txt";
+            string[] themeColors;
+
+            ConsoleColor foregroundColor;
+            ConsoleColor backgroundColor;
+
+            themeColors = File.ReadAllLines(dataPath);
+
+            Enum.TryParse(themeColors[0], true, out foregroundColor);
+            Enum.TryParse(themeColors[1], true, out backgroundColor);
+
+            return (foregroundColor, backgroundColor);
         }
 
         static void TalentShowDisplayMenuScreen(Finch finch)
