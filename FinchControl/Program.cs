@@ -180,7 +180,7 @@ namespace FinchControl
             ConsoleColor consoleColor;
 
             Console.WriteLine($"Enter a color for the {property}:");
-            while (!Enum.TryParse<ConsoleColor>(Console.ReadLine(), out consoleColor))
+            while (!Enum.TryParse<ConsoleColor>(Console.ReadLine(), true, out consoleColor))
             {
                 Console.WriteLine("That doesn't appear to be a valid color, please try again...");
             }
